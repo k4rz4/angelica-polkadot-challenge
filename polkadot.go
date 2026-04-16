@@ -49,12 +49,14 @@ func scan(art string) features {
 func (f *features) scanLine(lineNum int, line string) {
 	runStart, runLen := 0, 0
 	opens, closes := 0, 0
-	for x, ch := range line {
+	x := 0
+	for _, ch := range line {
 		if ch == '~' {
 			if runLen == 0 {
 				runStart = x
 			}
 			runLen++
+			x++
 			continue
 		}
 		f.collectRun(lineNum, runStart, runLen)
@@ -69,6 +71,7 @@ func (f *features) scanLine(lineNum int, line string) {
 		case ')':
 			closes++
 		}
+		x++
 	}
 	f.collectRun(lineNum, runStart, runLen)
 	if f.eyeLine == -1 && opens >= 2 && opens == closes {
