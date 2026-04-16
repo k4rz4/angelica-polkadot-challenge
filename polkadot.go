@@ -31,56 +31,56 @@ func scoreArt(art string) int {
 	return outside + inside*f.pupils
 }
 
-// scan walks the art once and collects the landmarks needed for scoring.
+// scan walks the art line by line and records the landmarks.
 func scan(art string) features {
 	f := features{eyeLine: -1, firstDot: -1}
-	line, x := 0, 0
-	runStart, runLen := 0, 0
-	open, closes := 0, 0
-
-	flushRun := func() {
-		if runLen >= 6 {
-			f.tildes = append(f.tildes, tildeRun{line, runStart, runLen})
-		}
-		runLen = 0
-	}
-	endLine := func() {
-		flushRun()
-		if f.eyeLine == -1 && open >= 2 && open == closes {
-			f.eyeLine = line
-			f.pupils = open + closes
-		}
-	}
-
-	for _, ch := range art {
+	lineNum, lineStart := 0, 0
+	for i, ch := range art {
 		if ch == '\n' {
-			endLine()
-			line++
-			x, open, closes = 0, 0, 0
-			continue
+			f.scanLine(lineNum, art[lineStart:i])
+			lineNum++
+			lineStart = i + 1
 		}
+	}
+	f.scanLine(lineNum, art[lineStart:])
+	return f
+}
+
+func (f *features) scanLine(lineNum int, line string) {
+	runStart, runLen := 0, 0
+	opens, closes := 0, 0
+	for x, ch := range line {
 		if ch == '~' {
 			if runLen == 0 {
 				runStart = x
 			}
 			runLen++
-		} else {
-			flushRun()
-			switch ch {
-			case 'O':
-				if f.firstDot == -1 {
-					f.firstDot = line
-				}
-			case '(':
-				open++
-			case ')':
-				closes++
-			}
+			continue
 		}
-		x++
+		f.collectRun(lineNum, runStart, runLen)
+		runLen = 0
+		switch ch {
+		case 'O':
+			if f.firstDot == -1 {
+				f.firstDot = lineNum
+			}
+		case '(':
+			opens++
+		case ')':
+			closes++
+		}
 	}
-	endLine()
-	return f
+	f.collectRun(lineNum, runStart, runLen)
+	if f.eyeLine == -1 && opens >= 2 && opens == closes {
+		f.eyeLine = lineNum
+		f.pupils = opens + closes
+	}
+}
+
+func (f *features) collectRun(line, start, length int) {
+	if length >= 6 {
+		f.tildes = append(f.tildes, tildeRun{line, start, length})
+	}
 }
 
 func findLips(f features) (start, end int) {
