@@ -12,7 +12,7 @@ represent the pupils.
 score = outside + inside * pupils
 ```
 
-See the original challenge for the full wording.
+See the [original challenge](https://gist.github.com/kmdupr33/8bab92e762d367de9455183abe04f38f) for the full wording and the ASCII art.
 
 ## Run
 
