@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"strings"
 )
 
 //go:embed angelica.txt
@@ -34,15 +35,9 @@ func scoreArt(art string) int {
 // scan walks the art line by line and records the landmarks.
 func scan(art string) features {
 	f := features{eyeLine: -1, firstDot: -1}
-	lineNum, lineStart := 0, 0
-	for i, ch := range art {
-		if ch == '\n' {
-			f.scanLine(lineNum, art[lineStart:i])
-			lineNum++
-			lineStart = i + 1
-		}
+	for i, line := range strings.Split(art, "\n") {
+		f.scanLine(i, line)
 	}
-	f.scanLine(lineNum, art[lineStart:])
 	return f
 }
 
