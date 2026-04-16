@@ -1,50 +1,45 @@
 # angelica polkadot challenge
 
-Solution for the Angelica polkadot challenge. The answer is 71.
+Solution for the Angelica polkadot challenge. The answer is **71**.
 
 ## Problem
 
-Count polkadots on a dress in an ASCII art image. Polkadots whose column falls
-between the lip columns are multiplied by the number of characters used to
-represent the pupils.
+Count polkadots (`O`) on a dress in an ASCII art image. Polkadots whose column
+falls within the lip range are weighted by the number of pupil characters.
 
 ```
 score = outside + inside * pupils
 ```
 
-See the [original challenge](https://gist.github.com/kmdupr33/8bab92e762d367de9455183abe04f38f) for the full wording and the ASCII art.
+See the [original challenge](https://gist.github.com/kmdupr33/8bab92e762d367de9455183abe04f38f) for the full problem statement and ASCII art.
 
-## Run
-
-```bash
-go run .
-```
-
-Prints the detected landmarks and the final score.
-
-## Test
+## Usage
 
 ```bash
-go test ./...
+make run    # prints detected landmarks and final score
+make test   # runs all tests
+make build  # compiles to ./angelica binary
+make clean  # removes compiled binary
 ```
 
 ## Approach
 
-Single pass over the art builds a `features` struct with three landmarks:
+Two O(n) passes over the art:
 
-- all tilde runs of length 6 or more
-- the first line that has matching `()` pairs (the eye line)
-- the first line that contains an `O` (top of the dress)
+**Pass 1 — `scan()`**: walks the art line by line, building a `features` struct with three landmarks:
+- all tilde runs of length ≥ 6 (lips, hair, and hem candidates)
+- the first line with ≥ 2 matched `()` pairs (the eye line) and its bracket count (pupil count)
+- the first line containing an `O` (top of the polkadot region)
 
-The lips are the tilde run that sits between the eye line and the first
-polkadot. Hair and hem runs fall outside that band so they are ignored.
-The pupil count is the number of `(` and `)` characters on the eye line.
+The lips are selected as the tilde run that falls **between** the eye line and the first polkadot row. (immune to horizontal shifts and feature reordering)
 
-Once the lip range is known, a second pass partitions every `O` into inside
-or outside the lip columns.
+**Pass 2 — `countDots()`**: partitions every `O` into inside or outside the detected lip column range.
 
 ## Files
 
-- `polkadot.go` main code
-- `polkadot_test.go` tests
-- `angelica.txt` the ASCII art, embedded at compile time via `//go:embed`
+| File | Purpose |
+|------|---------|
+| `polkadot.go` | all logic |
+| `polkadot_test.go` | unit + integration tests |
+| `angelica.txt` | ASCII art, embedded at compile time via `//go:embed` |
+| `Makefile` | build, test, run, clean |
